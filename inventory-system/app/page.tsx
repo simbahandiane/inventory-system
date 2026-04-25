@@ -13,7 +13,7 @@ export default function Home() {
     },
   ];
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status : string) => {
     switch (status) {
       case "OUT OF STOCK":
         return "text-red-500";
@@ -92,7 +92,7 @@ export default function Home() {
   );
 }
 
-function Card({ title, value }) {
+function Card({ title, value }: { title: string; value: string }) {
   return (
     <div className="bg-white rounded-2xl shadow p-4">
       <p className="text-gray-500">{title}</p>
