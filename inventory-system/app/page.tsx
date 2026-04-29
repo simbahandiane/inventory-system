@@ -9,6 +9,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import {FormDialog} from '../helper/form-dialog';
 
 type Item = {
   id: number;
@@ -22,6 +23,37 @@ type Item = {
 
 export default function Home() {
   const [items, setItems] = useState<Item[]>([]);
+  const [open, setOpen] = useState(false);
+  const [selectedName, setSelectedName] = useState('');
+  const [selectedDescription, setSelectedDescription] = useState('');
+  const [selectedQuantityInStock, setSelectedQuantityInStock] = useState(0);
+  const [selectedUnitPrice, setSelectedUnitPrice] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedIsActive, setSelectedIsActive] = useState(true);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  }
+
+  const handleClose = (name: string, description: string, quantityInStock: number, unitPrice: number, category: string, isActive: boolean) => {
+    setSelectedName('');
+    setSelectedDescription('');
+    setSelectedQuantityInStock(0);
+    setSelectedUnitPrice(0);
+    setSelectedCategory('');
+    setSelectedIsActive(true);
+    AddItem({
+      id: 0,
+      name: name,
+      description: description,
+      quantity_in_stock: quantityInStock,
+      unit_price: unitPrice,
+      category: category,
+      is_active: isActive
+    });
+    setOpen(false);
+
+  }
 
   useEffect(() => {
     fetchItems()
@@ -35,6 +67,27 @@ export default function Home() {
     if (error) console.error(error)
     else setItems(data)
   }
+
+  async function AddItem(item: Item) {
+    const { data, error } = await supabase
+      .from('inventory-system')
+      .insert([
+        {
+          name: item.name,
+          description: item.description,
+          quantity_in_stock: item.quantity_in_stock,
+          unit_price: item.unit_price,
+          category: item.category,
+          is_active: item.is_active
+        }
+      ]).select();
+
+    if (error) console.error(error);
+    else {
+      setItems([...items, ...data]);
+    }
+  }
+
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -61,9 +114,21 @@ export default function Home() {
 
       {/* Buttons */}
       <div className="flex gap-3 mb-6">
-        <button className="bg-blue-600 text-white px-4 py-2 rounded-xl shadow">
-            + Add Item
+        <button className="bg-blue-600 text-white px-4 py-2 rounded-xl shadow"
+            onClick={handleClickOpen}
+        >
+            Add Item
         </button>
+        <FormDialog 
+          selectedName={selectedName}
+          selectedDescription={selectedDescription}
+          selectedQuantityInStock={selectedQuantityInStock}
+          selectedUnitPrice={selectedUnitPrice}
+          selectedCategory={selectedCategory}
+          selectedIsActive={selectedIsActive}
+          open={open}
+          onClose={handleClose} 
+        />
         <button className="bg-white border px-4 py-2 rounded-xl shadow">
             Refresh
         </button>
@@ -101,6 +166,6 @@ export default function Home() {
         </TableBody>
       </Table>
     </TableContainer>
-    </div> 
+    </div>
   )
 }
